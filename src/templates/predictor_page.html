@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Forest Fire Prediction</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            justify-content: center;
+            align-content: center;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        input {
+            padding: 12px;
+            border: 2px solid #e1e1e1;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .result h2 {
+            color: #2c3e50;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+            color: #3498db;
+            cursor: help;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 5px;
+            border-radius: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Forest Fire Weather Index Prediction</h1>
+
+    <form action="{{ url_for('predict_datapoint') }}" method="post">
+        <div class="input-grid">
+            <div class="input-group">
+                <label for="temperature">Temperature (°C) <span class="tooltip">?<span class="tooltiptext">Enter the air temperature</span></span></label>
+                <input type="number" step="0.1" id="temperature" name="Temperature" required placeholder="e.g., 25.5"/>
+            </div>
+
+            <div class="input-group">
+                <label for="rh">Relative Humidity (%) <span class="tooltip">?<span class="tooltiptext">Enter the relative humidity</span></span></label>
+                <input type="number" step="0.1" id="rh" name="RH" required placeholder="e.g., 45.0"/>
+            </div>
+
+            <div class="input-group">
+                <label for="ws">Wind Speed (km/h) <span class="tooltip">?<span
+                        class="tooltiptext">Enter the wind speed</span></span></label>
+                <input type="number" step="0.1" id="ws" name="Ws" required placeholder="e.g., 15.0"/>
+            </div>
+
+            <div class="input-group">
+                <label for="rain">Rain (mm/m²) <span class="tooltip">?<span
+                        class="tooltiptext">Enter the rain amount</span></span></label>
+                <input type="number" step="0.1" id="rain" name="Rain" required placeholder="e.g., 0.0"/>
+            </div>
+
+            <div class="input-group">
+                <label for="ffmc">FFMC <span class="tooltip">?<span
+                        class="tooltiptext">Fine Fuel Moisture Code</span></span></label>
+                <input type="number" step="0.1" id="ffmc" name="FFMC" required placeholder="e.g., 90.0"/>
+            </div>
+
+            <div class="input-group">
+                <label for="dmc">DMC <span class="tooltip">?<span
+                        class="tooltiptext">Duff Moisture Code</span></span></label>
+                <input type="number" step="0.1" id="dmc" name="DMC" required placeholder="e.g., 50.0"/>
+            </div>
+
+            <div class="input-group">
+                <label for="isi">ISI <span class="tooltip">?<span class="tooltiptext">Initial Spread Index</span></span></label>
+                <input type="number" step="0.1" id="isi" name="ISI" required placeholder="e.g., 10.0"/>
+            </div>
+
+            <div class="input-group">
+                <label for="classes">Classes <span class="tooltip">?<span
+                        class="tooltiptext">Fire danger classes (0-4)</span></span></label>
+                <input type="number" min="0" max="4" id="classes" name="Classes" required placeholder="e.g., 2"/>
+            </div>
+
+            <div class="input-group">
+                <label for="region">Region <span class="tooltip">?<span
+                        class="tooltiptext">Geographic region code</span></span></label>
+                <input type="number" id="region" name="Region" required placeholder="e.g., 1"/>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button type="submit" class="btn btn-primary">Predict FWI</button>
+            <button type="reset" class="btn btn-secondary">Reset</button>
+        </div>
+    </form>
+
+    {% if result is defined %}
+        <div class="result">
+            <h2>Prediction Result</h2>
+            <p>The predicted Forest Weather Index (FWI) is: <strong>{{ "%.2f"|format(result) }}</strong></p>
+        </div>
+    {% endif %}
+</div>
+</body>
+</html>
